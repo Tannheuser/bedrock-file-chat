@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "bedrock-file-chat"
+version = "0.1.0"
+description = "Chat with your file using AWS Bedrock LLMs"
+authors = ["Aleksey Ryabinin <aleksey.ryabinin@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.39.0"
+boto3 = "^1.35.39"
+
+[tool.poetry.plugins.dotenv]
+location = ".env.local"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
