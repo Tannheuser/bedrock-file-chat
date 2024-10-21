@@ -1,8 +1,6 @@
 import streamlit as st
 from typing import Dict
 
-from altair import Config
-
 from layout import Layout
 from aws_service import AwsService
 
@@ -45,6 +43,10 @@ def set_state(config: Configuration):
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
+    # Initialize list of S3 bucket objects
+    if "s3_objects" not in st.session_state:
+        st.session_state.s3_objects = []
+
 
 def show_sidebar(config: Configuration):
     with st.sidebar:
@@ -56,11 +58,16 @@ def show_sidebar(config: Configuration):
         if get_files:
             if not bucket_name:
                 st.error("Please enter a bucket name.", icon=":material/error:")
-            # file = st.selectbox(
-            #     "Select file from your bucket",
-            #     ["First file", "Second file", "Third file"],
-            #     disabled=True,
-            # )
+            else:
+                objects = st.session_state.aws_service.list_files(bucket_name)
+                st.session_state.s3_objects = [obj["Key"] for obj in objects]
+
+        if st.session_state.s3_objects:
+            st.divider()
+
+            file = st.selectbox(
+                "Select file from your bucket", st.session_state.s3_objects
+            )
 
 
 def show_chat():
