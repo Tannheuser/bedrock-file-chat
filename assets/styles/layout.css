@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+.header {
+    display: flex;
+    font-family: "Space Mono", monospace;
+    align-items: center;
+    padding: 0  0 1rem 0;
+    border-bottom: 1px solid #049F86;
+    margin-bottom: 1rem;
+
+    .logo {
+        border-radius: 1rem;
+
+        img {
+            width: 3rem;
+            height: 3rem;
+            margin-right: 1rem;
+            border-radius: .5rem;
+        }
+    }
+
+    .title {
+        font-size: 1.5rem;
+        color: #049F86;
+    }
+}
+
+/* User avatar colour */
+.st-emotion-cache-1ghhuty {
+    background-color: #222F3E;
+}
+
+/* Bot avatar colour */
+.st-emotion-cache-bho8sy {
+    background-color: #049F86;
+}
+
+/* Set font for chat message box */
+.st-emotion-cache-1rsyhoq {
+    font-family: "Roboto", monospace;
+}
