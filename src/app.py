@@ -4,7 +4,7 @@ from typing import Dict
 from layout import Layout
 from aws_service import AwsService
 
-Configuration = Dict[str, any]
+Configuration = Dict[str, str]
 
 
 def main():
@@ -47,6 +47,14 @@ def set_state(config: Configuration):
     if "s3_objects" not in st.session_state:
         st.session_state.s3_objects = []
 
+    if "llm_configuration" not in st.session_state:
+        st.session_state.llm_configuration = None
+
+
+def get_llm_response(query):
+    query_config = st.session_state.llm_configuration
+    return st.session_state.aws_service.get_llm_response(query, **query_config)
+
 
 def show_sidebar(config: Configuration):
     with st.sidebar:
@@ -65,9 +73,14 @@ def show_sidebar(config: Configuration):
         if st.session_state.s3_objects:
             st.divider()
 
-            file = st.selectbox(
+            selected_file = st.selectbox(
                 "Select file from your bucket", st.session_state.s3_objects
             )
+            st.session_state.llm_configuration = {
+                "model_id": llm_id,
+                "bucket_name": bucket_name,
+                "file_name": selected_file,
+            }
 
 
 def show_chat():
@@ -86,8 +99,8 @@ def show_chat():
     if prompt := st.chat_input("Ask your question..."):
         put_chat_message("user", prompt)
 
-        # if response := model.get_llm_response(prompt, policy, language_code):
-        put_chat_message("assistant", "response")
+        if response := get_llm_response(prompt):
+            put_chat_message("assistant", response)
 
 
 if __name__ == "__main__":

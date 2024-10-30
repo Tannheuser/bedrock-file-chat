@@ -13,6 +13,34 @@ class AwsService:
         self.__s3_client = self.__session.client("s3")
         self.__bedrock_client = self.__session.client("bedrock-agent-runtime")
 
+    def _get_model_configuration(self, s3_url, model_id):
+        print(f"Using model id: {s3_url}")
+        model_arn = (
+            f"arn:aws:bedrock:{self.__session.region_name}::foundation-model/{model_id}"
+        )
+        return {
+            "type": "EXTERNAL_SOURCES",
+            "externalSourcesConfiguration": {
+                "modelArn": model_arn,
+                "sources": [
+                    {
+                        "sourceType": "S3",
+                        "s3Location": {
+                            "uri": s3_url,
+                        },
+                    }
+                ],
+            },
+        }
+
     def list_files(self, bucket_name):
         response = self.__s3_client.list_objects(Bucket=bucket_name)
         return response["Contents"]
+
+    def get_llm_response(self, query, bucket_name, file_name, model_id):
+        s3_url = f"s3://{bucket_name}/{file_name}"
+        config = self._get_model_configuration(s3_url, model_id)
+        response = self.__bedrock_client.retrieve_and_generate(
+            input={"text": query}, retrieveAndGenerateConfiguration=config
+        )
+        return response["output"]["text"]
