@@ -1,3 +1,5 @@
+from pydoc import resolve
+
 import streamlit as st
 from typing import Dict
 
@@ -15,6 +17,7 @@ def main():
             "anthropic.claude-3-sonnet-20240229-v1:0",  # only this model is supported by AWS as of now
             # "anthropic.claude-3-5-sonnet-20240620-v1:0",
         ],
+        "data_sources": ["S3", "Local file"],
     }
 
     set_state(config)
@@ -52,35 +55,54 @@ def set_state(config: Configuration):
 
 
 def get_llm_response(query):
-    query_config = st.session_state.llm_configuration
-    return st.session_state.aws_service.get_llm_response(query, **query_config)
+    query_config = {**st.session_state.llm_configuration, "query": query}
+    return st.session_state.aws_service.get_llm_response(query_config)
+
+
+def show_s3_selection(llm_id):
+    bucket_name = st.text_input("Bucket Name")
+    get_files = st.button("Get files")
+
+    if get_files:
+        if not bucket_name:
+            st.error("Please enter a bucket name.", icon=":material/error:")
+        else:
+            objects = st.session_state.aws_service.list_files(bucket_name)
+            st.session_state.s3_objects = [obj["Key"] for obj in objects]
+
+    if st.session_state.s3_objects:
+        st.divider()
+
+        selected_file = st.selectbox(
+            "Select file from your bucket", st.session_state.s3_objects
+        )
+        st.session_state.llm_configuration = {
+            "model_id": llm_id,
+            "bucket_name": bucket_name,
+            "file_name": selected_file,
+        }
+
+
+def show_file_upload(llm_id):
+    file = st.file_uploader("File to chat with", type=["pdf"])
+
+    if file:
+        st.session_state.llm_configuration = {
+            "model_id": llm_id,
+            "file": file,
+        }
 
 
 def show_sidebar(config: Configuration):
     with st.sidebar:
         st.text_input("AWS Profile", key="aws_profile", value=config.get("aws_profile"))
         llm_id = st.selectbox("LLM Model", config.get("llm_models"))
-        bucket_name = st.text_input("Bucket Name")
-        get_files = st.button("Get files")
+        source_type = st.selectbox("Data source", config.get("data_sources"))
 
-        if get_files:
-            if not bucket_name:
-                st.error("Please enter a bucket name.", icon=":material/error:")
-            else:
-                objects = st.session_state.aws_service.list_files(bucket_name)
-                st.session_state.s3_objects = [obj["Key"] for obj in objects]
-
-        if st.session_state.s3_objects:
-            st.divider()
-
-            selected_file = st.selectbox(
-                "Select file from your bucket", st.session_state.s3_objects
-            )
-            st.session_state.llm_configuration = {
-                "model_id": llm_id,
-                "bucket_name": bucket_name,
-                "file_name": selected_file,
-            }
+        if source_type == "S3":
+            show_s3_selection(llm_id)
+        else:
+            show_file_upload(llm_id)
 
 
 def show_chat():
